@@ -4,24 +4,28 @@ import re
 from pushbullet import Pushbullet
 import numpy as np
 
-array1 = np.array([0.025,0.05,0.075])
-array2= np.linspace(0.1, 0.2, 10)
+
+
+array2= np.linspace(0.0001, 0.25, 30)
 array3 = np.array([0.3, 0.4, 0.5, 0.6, 0.7, 0.8,0.9])
-array4 = np.arange(1, 3, 0.2)
-array5 = np.arange(3, 10, 0.5)
-energy_values = np.concatenate((array1,array2,array3,array4,array5))
+array4 = np.linspace(1, 5, 25)
+#array5 = np.arange(3, 10, 0.5)
+#energy_values = np.concatenate((array2,array3,array4))
+energy_values = [0.06903793103448276]
 
 no_events = [100000]
 
-pb = Pushbullet("o.iWhnN6tpdFI9kkPnu9961eqJjYMIniMC")
+#pb = Pushbullet("o.iWhnN6tpdFI9kkPnu9961eqJjYMIniMC")
 
 output_lines = []
+output_lines2 = []
 
 # Column headers
-headers = ["Number of Events", "Energy", "Photopeak Count", "Efficiency", "Error"]
+headers = ["no_event","Energy","PhotopeakCount","Efficiency","Error"]
 
 # File path
-file_path = "./efficiency_curve.csv"
+file_path = "./EfficiencyCurves/efficiency_curve_PxCT_Peek.csv"
+
 
 # Check if the file already exists
 if not os.path.isfile(file_path):
@@ -59,10 +63,12 @@ for energy in energy_values:
         output_lines.append([no_event, energy, PhotopeakCount, efficiency, error])
 
         # Open the CSV file in append mode and write the output line
-        with open("efficiency_curve.csv", "a", newline='') as f:
+
+        with open(file_path, "a", newline='') as f:
             writer = csv.writer(f)
             writer.writerow([no_event, energy, PhotopeakCount, efficiency, error])
 
-pb.push_note("Simulation Done", "The simulation and analysis are complete!")
 
-os.system("more efficiency_curve.csv")
+#pb.push_note("Simulation Done", "The simulation and analysis are complete!")
+
+os.system("more " + file_path)

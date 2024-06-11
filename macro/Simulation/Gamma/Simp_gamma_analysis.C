@@ -12,17 +12,20 @@
 #include "TMath.h"
 
 
-void Simp_gamma_analysis(Double_t energy=6,Int_t num_ev=750000)
+//THIS IS A SIMPLE VERSION OF THE SPECTRUM.C CODE. This outputs the photopeak efficency only.
+void Simp_gamma_analysis(Double_t energy=11,Int_t num_ev=10000)
+
 {
    
     std::string fileName = "test";
     
     
 
-    TString mcFileNameHead = "./data/DeGAi_";
+    TString mcFileNameHead = "./data/PxCT_";
     TString mcFileNameTail = ".root";
     TString mcFileName = mcFileNameHead + TString(fileName.c_str()) + mcFileNameTail;
-    TString outFileNameHead = "./data/DeGAiana";
+    TString outFileNameHead = "./data/PxCTana";
+
     TString outFileNameTail = ".root";
     TString outFileName = outFileNameHead + outFileNameTail;
 
@@ -48,11 +51,16 @@ void Simp_gamma_analysis(Double_t energy=6,Int_t num_ev=750000)
 
     TRandom3* gRandom = new TRandom3();
 
+    std::map<std::string, int> crystalHits; // Map to store hit count for each VolName
+
     for (Int_t iEvent = 0; iEvent < nEvents; iEvent++)
     {
         tree->GetEvent(iEvent);
         Int_t n = pointArray->GetEntries();
         Double_t energyLoss = 0.0;
+
+        Double_t energyLosspeek = 0.0;
+
 
         for (Int_t i = 0; i < n; i++) {
 
@@ -60,7 +68,9 @@ void Simp_gamma_analysis(Double_t energy=6,Int_t num_ev=750000)
             auto VolName = point->GetVolName();
 
             auto trackID = point->GetTrackID();
-            if (VolName.Contains("Crystal_") && !VolName.Contains("41")) {
+
+            if (VolName.Contains("Crystal_") && !VolName.Contains("Crystal_03")) {
+
 
                 // Gaussian smearing
                 //Float_t fResolutionGe = .30;
@@ -69,8 +79,11 @@ void Simp_gamma_analysis(Double_t energy=6,Int_t num_ev=750000)
                 //energyLoss += (inputEnergy + randomIs / 1000) * 1000; // MeV
                 energyLoss += inputEnergy * 1000;
                 Count++;
-            
+
+                 crystalHits[VolName.Data()]++;
             }
+            
+
             
 
                 
@@ -97,9 +110,14 @@ void Simp_gamma_analysis(Double_t energy=6,Int_t num_ev=750000)
     Double_t photopeakEfficency = (PhotopeakCount / num_ev) * 100.0;
     Double_t Err = (TMath::Sqrt(PhotopeakCount)/PhotopeakCount) *photopeakEfficency;
 
+    for (const auto& crystal : crystalHits) {
+        std::cout << "VolName: " << crystal.first << " had " << crystal.second << " hits." << std::endl;
+    }
+
+
     std::cout << "Total number of events : " << num_ev << std::endl;
     std::cout << "Number of events in photopeak : " << PhotopeakCount << std::endl;
     std::cout << "Photopeak Efficency : " << photopeakEfficency << "%" << std::endl;
     std::cout<<"Error: " << Err << std::endl;
-}
+
 
