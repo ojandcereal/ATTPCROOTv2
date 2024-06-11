@@ -33,7 +33,6 @@ void run_eve_sim(TString OutputDataFile = "./data/output.sim_display.root")
    // parIo1->open("param.dummy.root");
    rtdb->setFirstInput(parIo1);
 
-   AtEventDrawTask *eve = new AtEventDrawTask();
    auto fMap = std::make_shared<AtTpcMap>();
    fMap->ParseXMLMap(mapDir.Data());
    AtViewerManager *eveMan = new AtViewerManager(fMap);
