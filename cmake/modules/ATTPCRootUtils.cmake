@@ -3,21 +3,6 @@
 # https://github.com/dennisklein/FairRoot/blob/modernize_cmake_phase2
 # Adam Anthony 3/25/2022
 
-function(attpcroot_add_test_dir DIR)
-  file(RELATIVE_PATH subdir ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${DIR})
-  set_property(GLOBAL APPEND PROPERTY ATTPCROOT_TEST_DIRS ${subdir})
-endfunction()
-
-function(attpcroot_generate_tests TEST_NAME)
-  cmake_parse_arguments(ARG "" "" "SRCS;DEPS" ${ARGN})
-
-  #message(STATUS "Generating test ${TEST_NAME} with sources ${ARG_SRCS} and dependencies ${ARG_DEPS}")
-  add_executable(${TEST_NAME} ${ARG_SRCS})
-  target_link_libraries(${TEST_NAME} PRIVATE ${ARG_DEPS} GTest::gtest_main)
-  
-  include(GoogleTest)
-  gtest_discover_tests(${TEST_NAME})
-endfunction()
 
 
 macro(set_attpcroot_defaults)
@@ -123,9 +108,13 @@ macro(set_attpcroot_defaults)
 	set(clang-tidy_path_and_args
 	  ${clang-tidy_path}
 	  #--fix
-	  --extra-arg=-nostdinc++
 	  --extra-arg=-Wno-deprecated-declarations
 	  )
+    
+    if(${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 11.0.0)
+      message(STATUS "Using clang-tidy with g++ before 11.0.0, adding -nostdinc++ to extra args")
+      set(clang-tidy_path_and_args ${clang-tidy_path_and_args} --extra-arg=-nostdinc++)
+    endif()
 	message(STATUS "Setting clang tidy to: ${clang-tidy_path_and_args}") 
 	set(CMAKE_CXX_CLANG_TIDY ${clang-tidy_path_and_args})
 

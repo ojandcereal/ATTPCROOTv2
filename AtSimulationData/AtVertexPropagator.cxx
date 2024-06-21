@@ -22,10 +22,9 @@ AtVertexPropagator *AtVertexPropagator::Instance()
 }
 
 AtVertexPropagator::AtVertexPropagator()
-   : fGlobalEvtCnt(0), fBeamEvtCnt(0), fDecayEvtCnt(0), fVx(0.), fVy(0.), fVz(0.), fPx(0.), fPy(0.), fPz(0.), fE(0.),
-     fBeamMass(0), fRndELoss(0), fBeamNomE(0), fInVx(0), fInVy(0), fInVz(0), fRecoilE(0), fRecoilA(0), fScatterE(0),
-     fScatterA(0), fBURes1E(0), fBURes1A(0), fBURes2E(0), fBURes2A(0), fIsValidKine(false), fAiso(0), fZiso(0),
-     fExEjectile(0), fIsd2HeEvt(false)
+   : fVx(0.), fVy(0.), fVz(0.), fPx(0.), fPy(0.), fPz(0.), fE(0.), fBeamMass(0), fRndELoss(0), fBeamNomE(0), fInVx(0),
+     fInVy(0), fInVz(0), fRecoilE(0), fRecoilA(0), fScatterE(0), fScatterA(0), fBURes1E(0), fBURes1A(0), fBURes2E(0),
+     fBURes2A(0), fIsValidKine(false), fAiso(0), fZiso(0), fExEjectile(0), fIsd2HeEvt(false)
 {
 
    fScatP(0) = 0.0;
@@ -114,41 +113,6 @@ Double_t AtVertexPropagator::GetTrackEnergy(int trackID)
       return it->second;
 }
 
-/*
-void AtVertexPropagator::SetRecoilE(Double_t val)
-{
-   fRecoilE = val;
-}
-void AtVertexPropagator::SetRecoilA(Double_t val)
-{
-   fRecoilA = val;
-}
-void AtVertexPropagator::SetScatterE(Double_t val)
-{
-   fScatterE = val;
-}
-void AtVertexPropagator::SetScatterA(Double_t val)
-{
-   fScatterA = val;
-}
-void AtVertexPropagator::SetBURes1E(Double_t val)
-{
-   fBURes1E = val;
-}
-void AtVertexPropagator::SetBURes1A(Double_t val)
-{
-   fBURes1A = val;
-}
-void AtVertexPropagator::SetBURes2E(Double_t val)
-{
-   fBURes2E = val;
-}
-void AtVertexPropagator::SetBURes2A(Double_t val)
-{
-   fBURes2A = val;
-}
-*/
-
 void AtVertexPropagator::SetMassNum(Int_t mnum)
 {
    fAiso = mnum;
@@ -180,18 +144,6 @@ void AtVertexPropagator::Setd2HeVtx(Double_t x0, Double_t y0, Double_t Ax, Doubl
    fIsd2HeEvt = kTRUE;
 }
 
-Int_t AtVertexPropagator::GetGlobalEvtCnt()
-{
-   return fGlobalEvtCnt;
-}
-Int_t AtVertexPropagator::GetBeamEvtCnt()
-{
-   return fBeamEvtCnt;
-}
-Int_t AtVertexPropagator::GetDecayEvtCnt()
-{
-   return fDecayEvtCnt;
-}
 Double_t AtVertexPropagator::GetVx()
 {
    return fVx;
@@ -245,41 +197,6 @@ Double_t AtVertexPropagator::GetBeamNomE()
    return fBeamNomE;
 }
 
-/*
-Double_t AtVertexPropagator::GetRecoilE()
-{
-   return fRecoilE;
-}
-Double_t AtVertexPropagator::GetRecoilA()
-{
-   return fRecoilA;
-}
-Double_t AtVertexPropagator::GetScatterE()
-{
-   return fScatterE;
-}
-Double_t AtVertexPropagator::GetScatterA()
-{
-   return fScatterA;
-}
-Double_t AtVertexPropagator::GetBURes1E()
-{
-   return fBURes1E;
-}
-Double_t AtVertexPropagator::GetBURes1A()
-{
-   return fBURes1A;
-}
-Double_t AtVertexPropagator::GetBURes2E()
-{
-   return fBURes2E;
-}
-Double_t AtVertexPropagator::GetBURes2A()
-{
-   return fBURes2A;
-}
-*/
-
 Bool_t AtVertexPropagator::Getd2HeEvt()
 {
    return fIsd2HeEvt;
@@ -309,18 +226,6 @@ TVector3 AtVertexPropagator::Getd2HeVtx()
    return fd2HeVtx;
 }
 
-void AtVertexPropagator::IncGlobalEvtCnt()
-{
-   fGlobalEvtCnt++;
-}
-void AtVertexPropagator::IncBeamEvtCnt()
-{
-   fBeamEvtCnt++;
-}
-void AtVertexPropagator::IncDecayEvtCnt()
-{
-   fDecayEvtCnt++;
-}
 void AtVertexPropagator::SetValidKine(Bool_t val)
 {
    fIsValidKine = val;
