@@ -82,7 +82,7 @@ std::vector<std::vector<float>> readCSV(const std::string& fileName) {
 // Updated newFitting function to take a filename parameter
 void newFitting() { //const std::string& fileName
     // Read data from the CSV file
-    int column = 0;
+    int column = 4;
     csvData = readCSV("5bad.csv");
 
     // Check if the data has been loaded correctly
