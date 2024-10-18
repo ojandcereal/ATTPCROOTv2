@@ -41,17 +41,10 @@ AtPSADeconv::HitData AtPSADeconvFit::getZandQ(const AtPad::trace &charge)
    // Get initial guess for hit. Z loc is max and std dev is estimated from diffusion
    auto maxTB = std::max_element(begin(charge), end(charge));
    auto zTB = static_cast<double>(std::distance(begin(charge), maxTB));
-
-   auto zPos = CalculateZGeo(zTB);               // [mm]
-   auto driftTime = zPos / fDriftVelocity / 10.; // [us] drift velocity is cm/us
-   if (driftTime < 0)
-      driftTime = 0;
-   auto longDiff = std::sqrt(2 * fDiffLong * driftTime); // [cm] longitudal diff sigma
-   auto sigTime = longDiff / fDriftVelocity;             // [us] longitudal diff sigma
-   auto sigTB = sigTime / fTBTime * 1000.;               // [TB] sigTime is us, TBTime is ns.
-   if (sigTB < 0.1)
-      sigTB = 0.1;
-   LOG(debug) << "zTB: " << zTB << " zTime " << driftTime << " sigTB: " << sigTB << " Amp: " << *maxTB;
+   
+   auto sigTB = getSigTB(zTB); // [us] drift velocity is cm/us
+   
+   LOG(debug) << "zTB: " << zTB << " sigTB: " << sigTB << " Amp: " << *maxTB;
 
    if (*maxTB < getThreshold() || zTB < 20 || zTB > 500) {
       LOG(debug) << "Skipping pad: " << *maxTB << " below threshold or " << zTB
@@ -94,6 +87,22 @@ AtPSADeconv::HitData AtPSADeconvFit::getZandQ(const AtPad::trace &charge)
    LOG(debug) << "Fit: " << amp << " " << z << " " << sig;
 
    return {{z, sig * sig, Q, 0}};
+}
+
+double AtPSADeconvFit::getSigTB(double zTB) const
+{
+   
+
+   auto zPos = CalculateZGeo(zTB);               // [mm]
+   auto driftTime = zPos / fDriftVelocity / 10.; // [us] drift velocity is cm/us
+   if (driftTime < 0)
+      driftTime = 0;
+   auto longDiff = std::sqrt(2 * fDiffLong * driftTime); // [cm] longitudal diff sigma
+   auto sigTime = longDiff / fDriftVelocity;             // [us] longitudal diff sigma
+   auto sigTB = sigTime / fTBTime * 1000.;               // [TB] sigTime is us, TBTime is ns.
+   if (sigTB < 0.1)
+      sigTB = 0.1;
+      return sigTB;
 }
 
 const ROOT::Fit::FitResult AtPSADeconvFit::FitHistorgramParallel(TH1F &hist, TF1 &func)

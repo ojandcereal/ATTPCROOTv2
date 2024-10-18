@@ -87,7 +87,7 @@ Double_t AtPSA::CalculateZ(Double_t peakIdx)
    return (fNumTbs - peakIdx) * fTBTime * fDriftVelocity / 100.;
 }
 
-Double_t AtPSA::CalculateZGeo(Double_t peakIdx)
+Double_t AtPSA::CalculateZGeo(Double_t peakIdx) const
 {
    return fZk - (fEntTB - peakIdx) * fTBTime * fDriftVelocity / 100.;
 }

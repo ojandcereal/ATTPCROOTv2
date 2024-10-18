@@ -21,6 +21,7 @@ public:
 
 protected:
    HitData getZandQ(const AtPad::trace &charge) override;
+   double getSigTB(double zTB) const;
 
    const ROOT::Fit::FitResult FitHistorgramParallel(TH1F &hist, TF1 &func);
 };

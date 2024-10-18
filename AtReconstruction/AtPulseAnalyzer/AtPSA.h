@@ -76,7 +76,7 @@ protected:
 
    [[deprecated]] Double_t CalculateZ(Double_t peakIdx); ///< Calculate z position in mm using the peak index.
 
-   Double_t CalculateZGeo(Double_t peakIdx);
+   Double_t CalculateZGeo(Double_t peakIdx) const;
    Double_t getThreshold(int padSize = -1);
 
    virtual double getZhitVariance(double zLoc, double zLocVar) const;
