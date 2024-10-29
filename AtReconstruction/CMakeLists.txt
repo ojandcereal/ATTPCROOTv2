@@ -49,6 +49,7 @@ set(SRCS
   AtPulseAnalyzer/AtCalibration.cxx
   AtPulseAnalyzer/AtPSADeconv.cxx
   AtPulseAnalyzer/AtPSADeconvFit.cxx
+  AtPulseAnalyzer/AtPSADeconvFitBaseline.cxx
   AtPulseAnalyzer/AtPSAIterDeconv.cxx
   AtPulseAnalyzer/AtPSAComposite.cxx
 
@@ -85,7 +86,6 @@ set(SRCS
   
   AtPatternRecognition/triplclust/src/cluster.cxx
   AtPatternRecognition/triplclust/src/triplet.cxx
-  AtPatternRecognition/triplclust/src/main.cxx
   AtPatternRecognition/triplclust/src/dnn.cxx
   AtPatternRecognition/triplclust/src/hclust/fastcluster.cxx
   AtPatternRecognition/triplclust/src/kdtree/kdtree.cxx
@@ -107,14 +107,19 @@ set(SRCS
   AtFitter/AtMCFitter.cxx
   AtFitter/AtMCFitterTask.cxx
   AtFitter/AtMCFission.cxx
+
+  AtPatternRecognition/triplclust/src/orthogonallsq.cxx
   )
 
 ### Add additional sources and libraries if we found certain modules ###
 
 if(TARGET EIGEN3::Eigen)
-  set(SRC ${SRC}
+  set(SRCS ${SRCS}
   AtPatternRecognition/triplclust/src/orthogonallsq.cxx
   )
+  set(DEPENDENCIES ${DEPENDENCIES}
+  EIGEN3::Eigen
+   )
 endif()
 
 if(GENFIT2_FOUND)
@@ -146,6 +151,16 @@ if(HiRAEVT_FOUND)
     HTDetectors
     )
 endif()
+
+set(TEST_SRCS
+  AtPulseAnalyzer/AtPSADeconvFitBaselineTest.cxx
+)
+
+
+attpcroot_generate_tests(${LIBRARY_NAME}Tests
+  SRCS ${TEST_SRCS}
+  DEPS ${LIBRARY_NAME}
+  )
 
 generate_target_and_root_library(${LIBRARY_NAME}
   LINKDEF ${LINKDEF}

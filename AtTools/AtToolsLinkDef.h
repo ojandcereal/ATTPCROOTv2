@@ -52,6 +52,7 @@
 #pragma link C++ class CSVIterator < int> - !;
 #pragma link C++ class CSVRange < int> - !;
 #pragma link C++ class CSVRange < std::string> - !;
+#pragma link C++ class CSVRange < float> - !;
 #pragma link C++ class tk::spline - !;
 
 #pragma link C++ class AtFindVertex - !;

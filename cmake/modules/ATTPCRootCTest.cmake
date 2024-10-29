@@ -30,7 +30,7 @@ function(attpcroot_generate_tests TEST_NAME)
   
   add_executable(${TEST_NAME} ${ARG_SRCS})
   target_link_libraries(${TEST_NAME} PRIVATE ${ARG_DEPS} GTest::gtest_main)
-  gtest_discover_tests(${TEST_NAME} TEST_PREFIX "${TEST_NAME}.")
+  gtest_discover_tests(${TEST_NAME}  PROPERTIES ENVIROMENT "VMCWORKDIR=${CMAKE_SOURCE_DIR}" TEST_PREFIX "${TEST_NAME}.")
 
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORIG_CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 endfunction()

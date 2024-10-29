@@ -18,6 +18,7 @@ protected:
 public:
    virtual void Init() override;
    virtual std::unique_ptr<AtPSA> Clone() override { return std::make_unique<AtPSADeconvFit>(*this); }
+   double GetDiffLong() const { return fDiffLong; }
 
 protected:
    HitData getZandQ(const AtPad::trace &charge) override;

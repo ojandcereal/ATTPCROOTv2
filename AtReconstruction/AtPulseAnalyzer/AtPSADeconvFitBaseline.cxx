@@ -1,7 +1,9 @@
-#include "AtPSADeconvFit.h"
+
+#include "AtPSADeconvFitBaseline.h"
 
 #include "AtContainerManip.h"
 #include "AtDigiPar.h"
+#include "AtPSADeconvFit.h"
 
 #include <FairLogger.h> // for Logger, LOG
 #include <FairParSet.h> // for FairParSet
@@ -27,30 +29,17 @@
 #include <iterator>   // for begin, distance, end
 #include <memory>     // for allocator, unique_ptr
 #include <thread>
-thread_local std::unique_ptr<TH1F> AtPSADeconvFit::fHist = nullptr;
 
-void AtPSADeconvFit::Init()
-{
-   AtPSADeconv::Init();
-   auto fPar = dynamic_cast<AtDigiPar *>(FairRun::Instance()->GetRuntimeDb()->getContainer("AtDigiPar"));
-   fDiffLong = fPar->GetCoefDiffusionLong();
-}
+AtPSADeconvFitBaseline::AtPSADeconvFitBaseline() = default;
+AtPSADeconvFitBaseline::~AtPSADeconvFitBaseline() = default;
 
-AtPSADeconv::HitData AtPSADeconvFit::getZandQ(const AtPad::trace &charge)
+AtPSADeconv::HitData AtPSADeconvFitBaseline::getZandQ(const AtPad::trace &charge)
 {
    // Get initial guess for hit. Z loc is max and std dev is estimated from diffusion
    auto maxTB = std::max_element(begin(charge), end(charge));
    auto zTB = static_cast<double>(std::distance(begin(charge), maxTB));
-   
-   auto sigTB = getSigTB(zTB); // [us] drift velocity is cm/us
-   
-   LOG(debug) << "zTB: " << zTB << " sigTB: " << sigTB << " Amp: " << *maxTB;
 
-   if (*maxTB < getThreshold() || zTB < 20 || zTB > 500) {
-      LOG(debug) << "Skipping pad: " << *maxTB << " below threshold or " << zTB
-                 << " outside initial guess for hit TB is outside valid range (20,500).";
-      return {};
-   }
+   auto sigTB = getSigTB(zTB); // [us] drift velocity is cm/us
 
    // Create a historgram to fit and fit to range mean +- 4 sigma.
    auto id = std::hash<std::thread::id>{}(std::this_thread::get_id());
@@ -82,52 +71,31 @@ AtPSADeconv::HitData AtPSADeconvFit::getZandQ(const AtPad::trace &charge)
    auto z = result.GetParams()[1];
    auto sig = result.GetParams()[2];
 
-   auto Q = amp * sig * std::sqrt(2 * TMath::Pi());
+   // auto Q = amp * sig * std::sqrt(2 * TMath::Pi());
+   auto begin = zTB - z * 3;
+   auto end = zTB + z * 3;
+   TF1 Baseline(TString::Format("Baseline%lu", id), "[0]*exp(-0.5*((x-[1])/[2])^2) + [3] + [4]*x", begin, end,
+                TF1::EAddToList::kNo);
+   Baseline.SetParameter(0, *maxTB); // Set initial height of gaussian
+   Baseline.SetParameter(1, zTB);    // Set initial position of gaussian
+   Baseline.SetParameter(2, sig);    // Set initial sigma of gaussian
+   Baseline.SetParameter(3, 0);      // Set initial intercept of the line
+   Baseline.SetParameter(4, 0);
 
+   auto result2 = FitHistorgramParallel(*fHist, Baseline);
+
+   if (!result2.IsValid()) {
+      LOG(info) << "Fit did not converge using initial conditions:"
+                << " mean: " << zTB << " sig:" << sigTB << " max:" << *maxTB;
+      return {};
+   }
+   auto amp2 = result2.GetParams()[0];
+   auto z2 = result2.GetParams()[1];
+   auto sig2 = result2.GetParams()[2];
+   auto Q = amp2 * sig2 * std::sqrt(2 * TMath::Pi());
 
    LOG(debug) << "Initial: " << *maxTB << " " << zTB << " " << sigTB;
    LOG(debug) << "Fit: " << amp << " " << z << " " << sig;
 
-   return {{z, sig * sig, Q, 0}};
-}
-
-double AtPSADeconvFit::getSigTB(double zTB) const
-{
-   
-
-   auto zPos = CalculateZGeo(zTB);               // [mm]
-   auto driftTime = zPos / fDriftVelocity / 10.; // [us] drift velocity is cm/us
-   if (driftTime < 0)
-      driftTime = 0;
-   auto longDiff = std::sqrt(2 * fDiffLong * driftTime); // [cm] longitudal diff sigma
-   auto sigTime = longDiff / fDriftVelocity;             // [us] longitudal diff sigma
-   auto sigTB = sigTime / fTBTime * 1000.;               // [TB] sigTime is us, TBTime is ns.
-   if (sigTB < 0.1)
-      sigTB = 0.1;
-      return sigTB;
-}
-
-const ROOT::Fit::FitResult AtPSADeconvFit::FitHistorgramParallel(TH1F &hist, TF1 &func)
-{
-   // Create the data to fit
-   double xmin = 0, xmax = 0;
-   func.GetRange(xmin, xmax);
-   ROOT::Fit::DataOptions opt;
-
-   ROOT::Fit::DataRange range(xmin, xmax);
-   ROOT::Fit::BinData d(opt, range);
-   ROOT::Fit::FillData(d, &hist);
-
-   // Create the function to fit (just a wrapper)
-   ROOT::Math::WrappedMultiTF1 wf(func);
-
-   ROOT::Fit::Fitter fFitter;
-   fFitter.Config().SetMinimizer("Minuit2");
-   fFitter.SetFunction(wf, false);
-
-   bool goodFit = fFitter.Fit(d);
-   if (goodFit)
-      return fFitter.Result();
-   else
-      return {};
+   return {{z2, sig2 * sig2, Q, 0}};
 }

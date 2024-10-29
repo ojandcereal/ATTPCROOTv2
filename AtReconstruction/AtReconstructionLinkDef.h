@@ -22,6 +22,7 @@
 #pragma link C++ class AtPSASimple2 + ;
 #pragma link C++ class AtPSADeconv - !;
 #pragma link C++ class AtPSADeconvFit - !;
+#pragma link C++ class AtPSADeconvFitBaseline - !;
 #pragma link C++ class AtPSAIterDeconv - !;
 #pragma link C++ class AtPSAComposite - !;
 
