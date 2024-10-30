@@ -30,9 +30,6 @@
 #include <memory>     // for allocator, unique_ptr
 #include <thread>
 
-AtPSADeconvFitBaseline::AtPSADeconvFitBaseline() = default;
-AtPSADeconvFitBaseline::~AtPSADeconvFitBaseline() = default;
-
 AtPSADeconv::HitData AtPSADeconvFitBaseline::getZandQ(const AtPad::trace &charge)
 {
    // Get initial guess for hit. Z loc is max and std dev is estimated from diffusion
