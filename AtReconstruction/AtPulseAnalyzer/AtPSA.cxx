@@ -29,7 +29,6 @@ using std::min_element;
 
 void AtPSA::Init()
 {
-
    FairRun *run = FairRun::Instance();
    if (!run)
       LOG(fatal) << "No analysis run!";
@@ -43,6 +42,12 @@ void AtPSA::Init()
       LOG(fatal) << "AtDigiPar not found!!";
       return;
    }
+
+   Init(fPar);
+}
+
+void AtPSA::Init(AtDigiPar *fPar)
+{
 
    fTBTime = fPar->GetTBTime();
    fDriftVelocity = fPar->GetDriftVelocity();
@@ -105,7 +110,8 @@ void AtPSA::TrackMCPoints(std::multimap<Int_t, std::size_t> &map, AtHit &hit)
          hit.AddMCSimPoint(mcpoint);
 
          // std::cout << " Pad Num : "<<hit->GetHitPadNum()<<" MC Point ID : "<<it->second << std::endl;
-         // std::cout << " Track ID : "<<MCPoint->GetTrackID()<<" Energy (MeV) : "<<MCPoint->GetEIni()<<" Angle (deg) :
+         // std::cout << " Track ID : "<<MCPoint->GetTrackID()<<" Energy (MeV) : "<<MCPoint->GetEIni()<<" Angle (deg)
+         // :
          // "<<MCPoint->GetAIni()<<"\n"; std::cout << " Mass Number : "<<MCPoint->GetMassNum()<<" Atomic Number
          // "<<MCPoint->GetAtomicNum()<<"\n";
       }

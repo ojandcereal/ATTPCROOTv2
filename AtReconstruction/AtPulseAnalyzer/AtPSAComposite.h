@@ -21,7 +21,7 @@ public:
    AtPSAComposite(std::unique_ptr<AtPSA> beamPSA, std::unique_ptr<AtPSA> PSA, double beamRadius = 40);
    AtPSAComposite(const AtPSAComposite &);
 
-   void Init() override;
+   void Init(AtDigiPar *fPar) override;
    virtual HitVector AnalyzePad(AtPad *) override;
    std::unique_ptr<AtPSA> Clone() override { return std::make_unique<AtPSAComposite>(*this); }
 };

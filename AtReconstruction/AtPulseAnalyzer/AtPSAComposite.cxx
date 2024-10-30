@@ -17,10 +17,10 @@ AtPSAComposite::AtPSAComposite(const AtPSAComposite &o)
 {
 }
 
-void AtPSAComposite::Init()
+void AtPSAComposite::Init(AtDigiPar *fPar)
 {
-   fBeamPSA->Init();
-   fPSA->Init();
+   fBeamPSA->Init(fPar);
+   fPSA->Init(fPar);
 }
 AtPSA::HitVector AtPSAComposite::AnalyzePad(AtPad *pad)
 {
