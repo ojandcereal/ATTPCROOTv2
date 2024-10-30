@@ -154,6 +154,7 @@ endif()
 
 set(TEST_SRCS
   AtPulseAnalyzer/AtPSADeconvFitBaselineTest.cxx
+  AtPulseAnalyzer/AtPSATest.cxx
 )
 
 

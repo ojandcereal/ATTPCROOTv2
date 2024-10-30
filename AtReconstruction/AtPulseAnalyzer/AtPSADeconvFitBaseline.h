@@ -5,8 +5,8 @@
 
 class AtPSADeconvFitBaseline : public AtPSADeconvFit {
 public:
-   AtPSADeconvFitBaseline();
-   virtual ~AtPSADeconvFitBaseline();
+   AtPSADeconvFitBaseline() = default;
+   virtual ~AtPSADeconvFitBaseline() = default;
 
    // Override getZandQ method from AtPSADeconv
    virtual HitData getZandQ(const AtPad::trace &charge) override;

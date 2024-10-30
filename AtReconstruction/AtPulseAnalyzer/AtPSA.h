@@ -18,6 +18,7 @@ class AtPad;
 class TBuffer;
 class TClass;
 class TMemberInspector;
+class AtDigiPar;
 
 /**
  * @brief Abstract base class for processing AtPads (traces) into AtHits.
@@ -53,7 +54,8 @@ public:
    AtPSA() = default;
    virtual ~AtPSA() = default;
 
-   virtual void Init();
+   void Init();
+   virtual void Init(AtDigiPar *fPar);
 
    void SetThreshold(Int_t threshold);
    void SetThresholdLow(Int_t thresholdlow);

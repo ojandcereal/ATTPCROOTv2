@@ -10,13 +10,16 @@ class AtPSA;
 
 class TH1F;
 class TF1;
+
 class AtPSADeconvFit : public AtPSADeconv {
+
 protected:
    double fDiffLong; //< Longitudinal diffusion coefficient
    static thread_local std::unique_ptr<TH1F> fHist;
 
 public:
-   virtual void Init() override;
+   using AtPSA::Init; // Return base class Init to scope (since the override will shadow it by default)
+   virtual void Init(AtDigiPar *fPar) override;
    virtual std::unique_ptr<AtPSA> Clone() override { return std::make_unique<AtPSADeconvFit>(*this); }
    double GetDiffLong() const { return fDiffLong; }
 

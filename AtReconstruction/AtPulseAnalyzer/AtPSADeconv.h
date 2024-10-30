@@ -35,7 +35,7 @@ class AtPadFFT;
  * @ingroup PSA
  * @author A.K. Anthony
  */
-class AtPSADeconv : public virtual AtPSA {
+class AtPSADeconv : public AtPSA {
 
 protected:
    using ResponseFunc = std::function<double(int, double)>;

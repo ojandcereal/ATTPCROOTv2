@@ -29,10 +29,11 @@
 #include <thread>
 thread_local std::unique_ptr<TH1F> AtPSADeconvFit::fHist = nullptr;
 
-void AtPSADeconvFit::Init()
+void AtPSADeconvFit::Init(AtDigiPar *fPar)
 {
-   AtPSADeconv::Init();
-   auto fPar = dynamic_cast<AtDigiPar *>(FairRun::Instance()->GetRuntimeDb()->getContainer("AtDigiPar"));
+   AtPSADeconv::Init(fPar);
+   if (fPar == nullptr)
+      LOG(fatal) << "AtDigiPar not found!!";
    fDiffLong = fPar->GetCoefDiffusionLong();
 }
 
@@ -41,9 +42,9 @@ AtPSADeconv::HitData AtPSADeconvFit::getZandQ(const AtPad::trace &charge)
    // Get initial guess for hit. Z loc is max and std dev is estimated from diffusion
    auto maxTB = std::max_element(begin(charge), end(charge));
    auto zTB = static_cast<double>(std::distance(begin(charge), maxTB));
-   
+
    auto sigTB = getSigTB(zTB); // [us] drift velocity is cm/us
-   
+
    LOG(debug) << "zTB: " << zTB << " sigTB: " << sigTB << " Amp: " << *maxTB;
 
    if (*maxTB < getThreshold() || zTB < 20 || zTB > 500) {
@@ -84,7 +85,6 @@ AtPSADeconv::HitData AtPSADeconvFit::getZandQ(const AtPad::trace &charge)
 
    auto Q = amp * sig * std::sqrt(2 * TMath::Pi());
 
-
    LOG(debug) << "Initial: " << *maxTB << " " << zTB << " " << sigTB;
    LOG(debug) << "Fit: " << amp << " " << z << " " << sig;
 
@@ -93,7 +93,6 @@ AtPSADeconv::HitData AtPSADeconvFit::getZandQ(const AtPad::trace &charge)
 
 double AtPSADeconvFit::getSigTB(double zTB) const
 {
-   
 
    auto zPos = CalculateZGeo(zTB);               // [mm]
    auto driftTime = zPos / fDriftVelocity / 10.; // [us] drift velocity is cm/us
@@ -104,7 +103,7 @@ double AtPSADeconvFit::getSigTB(double zTB) const
    auto sigTB = sigTime / fTBTime * 1000.;               // [TB] sigTime is us, TBTime is ns.
    if (sigTB < 0.1)
       sigTB = 0.1;
-      return sigTB;
+   return sigTB;
 }
 
 const ROOT::Fit::FitResult AtPSADeconvFit::FitHistorgramParallel(TH1F &hist, TF1 &func)
