@@ -11,8 +11,15 @@ class TBuffer;
 class TClass;
 class TMemberInspector;
 
+/**
+ * @brief Parameter container for the AT-TPC digitization.
+ *
+ * This class contains all the parameters needed for the digitization and analysis of TPC data.
+ * The parameters are all public, as this is simply a database and we want the ability to modify
+ * the parameters at runtime when testing.
+ */
 class AtDigiPar : public FairParGenericSet {
-private:
+public:
    Bool_t fInitialized;
 
    Double_t fBField{};
@@ -67,7 +74,7 @@ public:
    virtual Bool_t getParams(FairParamList *paramList) override;
    // Main methods
 
-   ClassDefOverride(AtDigiPar, 4);
+   ClassDefOverride(AtDigiPar, 5);
 };
 
 #endif
