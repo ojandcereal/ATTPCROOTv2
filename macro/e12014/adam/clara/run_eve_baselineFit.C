@@ -1,10 +1,13 @@
+/*#include "TString.h"
+#include "AtEventDrawTask.h"
+#include "AtEventManager.h"
+
+#include "FairParRootFileIo.h"
+#include "FairRunAna.h"
+*/
 #include "FairLogger.h"
 
-// Macro to fit data using BaselineDeconv code on the HPC
-// Loads in a data file containing Bi200 fission events.
-// It coppies the data into a new file, and then re-fits the traces in the
-// data using the BaselineDeconv code.
-void runFitting()
+void run_eve_baselineFit()
 {
 
    auto verbSpec =
@@ -12,10 +15,11 @@ void runFitting()
    fair::Logger::DefineVerbosity("user1", verbSpec);
    // fair::Logger::SetVerbosity("user1");
    // fair::Logger::SetConsoleSeverity("debug");
+
    TString sharedInfoDir = "~/fission/data/e12014/tpcSharedInfo/";
    TString path = "~/fission/data/e12014/unpacked/";
    TString InputDataFile = path + "/Bi200.root";
-   TString OutputDataFile = path + "/baselineFit/Bi200.root";
+   TString OutputDataFile = "./data/output.reco_display.root";
 
    TString dir = getenv("VMCWORKDIR");
    TString geoFile = "ATTPC_v1.1_geomanager.root";
@@ -27,7 +31,6 @@ void runFitting()
    TString GeoDataPath = dir + "/geometry/" + geoFile;
    TString mapDir = dir + "/scripts/" + mapFile;
 
-   // Create the input and output for the data and create the run to manage the tasks
    FairRunAna *fRun = new FairRunAna();
    FairRootFileSink *sink = new FairRootFileSink(OutputDataFile);
    FairFileSource *source = new FairFileSource(InputDataFile);
@@ -41,10 +44,23 @@ void runFitting()
    fRun->GetRuntimeDb()->setFirstInput(parIo1);
    fRun->GetRuntimeDb()->getContainer("AtDigiPar");
 
-   E12014::CreateMap();
-   auto fMap = E12014::fMap;
+   auto fMap = std::make_shared<AtTpcMap>();
+   fMap->ParseXMLMap(mapDir.Data());
 
-   AtCopyTreeTask *copyTask = new AtCopyTreeTask();
+   // Create viewer manager
+   auto eveMan = new AtViewerManager(fMap);
+
+   auto tabMain = std::make_unique<AtTabMain>();
+
+   auto tabPad = std::make_unique<AtTabPad>(2, 2);
+   tabPad->DrawRawADC(0, 0);
+   tabPad->DrawADC(0, 1);
+   tabPad->DrawArrayAug("Qreco", 1, 1);
+   tabPad->DrawHits(1, 1);
+   tabPad->DrawHits(0, 0);
+
+   eveMan->AddTab(std::move(tabMain));
+   eveMan->AddTab(std::move(tabPad));
 
    AtRawEvent *respAvgEvent;
    TFile *f2 = new TFile(sharedInfoDir + "respAvg.root");
@@ -59,21 +75,9 @@ void runFitting()
    psa->SetCutoffFreq(75);
    AtPSAtask *psaTask = new AtPSAtask(std::move(psa));
    psaTask->SetInputBranch("AtRawEventRaw");
+   eveMan->AddTask(psaTask);
 
-   fRun->AddTask(reduceTask);
-   fRun->AddTask(copyTask);
-   fRun->AddTask(fitTask);
+   eveMan->Init();
 
-   auto initStart = std::chrono::high_resolution_clock::now();
-   fRun->Init();
-   auto runStart = std::chrono::high_resolution_clock::now();
-   // fRun->Run(0, 4);
-   // fRun->Run(0, 100);
-   // fRun->Run(0, 2000);
-   fRun->Run();
-   auto runStop = std::chrono::high_resolution_clock::now();
-
-   LOG(info) << "Run processed in "
-             << std::chrono::duration_cast<std::chrono::milliseconds>(runStop - initStart).count() / (double)1000
-             << " seconds.";
+   std::cout << "Finished init" << std::endl;
 }
