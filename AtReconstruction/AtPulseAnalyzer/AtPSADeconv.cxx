@@ -32,7 +32,8 @@ AtPSADeconv::AtPSADeconv() : AtPSA()
 
 AtPSADeconv::AtPSADeconv(const AtPSADeconv &r)
    : fEventResponse(r.fEventResponse), fResponse(r.fResponse), fFFT(nullptr), fFFTbackward(nullptr),
-     fFilterOrder(r.fFilterOrder), fCutoffFreq(r.fCutoffFreq), fUseSimulatedCharge(r.fUseSimulatedCharge)
+     fFilterOrder(r.fFilterOrder), fCutoffFreq(r.fCutoffFreq), fUseSimulatedCharge(r.fUseSimulatedCharge),
+     fUseExistingCharge(r.fUseExistingCharge)
 {
    initFFTs();
 }
@@ -218,6 +219,10 @@ AtPSADeconv::HitVector AtPSADeconv::AnalyzePad(AtPad *pad)
    // If this pad has simulated charge, use that instead
    if (fUseSimulatedCharge && pad->GetAugment<AtPadArray>("Q") != nullptr)
       return chargeToHits(*pad, "Q");
+
+   // If this pad already contains reconstructed charge, then just use it as is.
+   if (fUseExistingCharge && pad->GetAugment<AtPadArray>("Qreco") != nullptr)
+      return chargeToHits(*pad, "Qreco");
 
    // If this pad already contains FFT information, then just use it as is.
    if (dynamic_cast<AtPadFFT *>(pad->GetAugment("fft")) != nullptr)
