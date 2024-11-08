@@ -93,6 +93,6 @@ TEST_F(AtPSADeconvFitBaselineTestFixture, GetZandQ)
 
    // Add assertions to check the result
    // Replace these with actual expectations based on the function's behavior
-   EXPECT_TRUE(result[0].z > 0); // Assuming HitData has a 'z' attribute
-   EXPECT_TRUE(result[0].q > 0); // Assuming HitData has a 'q' attribute
+   EXPECT_TRUE(result[0].z > 0);           // Assuming HitData has a 'z' attribute
+   EXPECT_FLOAT_EQ(result[0].q, 714.9197); // Assuming HitData has a 'q' attribute
 }
