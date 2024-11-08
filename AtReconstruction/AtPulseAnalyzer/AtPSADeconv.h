@@ -96,7 +96,7 @@ public:
    const AtPadFFT &GetResponseFFT(int padNum);
    const AtPadFFT &GetResponseFilter(int padNum);
 
-protected:
+
    /// Struct for storing Z and Q hit data used by getZandQ function
    struct ZHitData {
       double z;
@@ -104,10 +104,11 @@ protected:
       double q;
       double qVar;
    };
-
+   
    /// Data structure for Z loc (TB), Z variance (TB), Charge (arb), Charge variance (arb)
    using HitData = std::vector<ZHitData>;
-
+   
+protected:
    AtPad *createResponsePad(int padNum);
 
    /**
