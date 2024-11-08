@@ -32,7 +32,8 @@ AtPSADeconv::AtPSADeconv() : AtPSA()
 
 AtPSADeconv::AtPSADeconv(const AtPSADeconv &r)
    : fEventResponse(r.fEventResponse), fResponse(r.fResponse), fFFT(nullptr), fFFTbackward(nullptr),
-     fFilterOrder(r.fFilterOrder), fCutoffFreq(r.fCutoffFreq), fUseSimulatedCharge(r.fUseSimulatedCharge)
+     fFilterOrder(r.fFilterOrder), fCutoffFreq(r.fCutoffFreq), fUseSimulatedCharge(r.fUseSimulatedCharge),
+     fUseExistingCharge(r.fUseExistingCharge)
 {
    initFFTs();
 }
@@ -109,11 +110,11 @@ const AtPadFFT &AtPSADeconv::GetResponseFFT(int padNum)
 const AtPadFFT &AtPSADeconv::GetResponseFilter(int padNum)
 {
    auto &pad = GetResponse(padNum);
-   auto &fft = GetResponseFFT(padNum);
    auto filter = dynamic_cast<AtPadFFT *>(pad.GetAugment("filter"));
 
    if (filter == nullptr) {
       LOG(debug) << "Adding filter to pad " << padNum;
+      auto &fft = GetResponseFFT(padNum);
       filter = dynamic_cast<AtPadFFT *>(pad.AddAugment("filter", std::make_unique<AtPadFFT>()));
       updateFilter(fft, filter);
    }
@@ -139,6 +140,9 @@ AtPad *AtPSADeconv::createResponsePad(int padNum)
    auto tbTime = fPar->GetTBTime() / 1000.;
 
    auto pad = fEventResponse.AddPad(padNum);
+   if (fResponse == nullptr && fUseExistingCharge)
+      return pad;
+
    LOG(debug) << "Filling response pad for " << padNum;
    for (int i = 0; i < 512; ++i) {
       auto time = (i + 0.5) * tbTime;
@@ -218,6 +222,10 @@ AtPSADeconv::HitVector AtPSADeconv::AnalyzePad(AtPad *pad)
    // If this pad has simulated charge, use that instead
    if (fUseSimulatedCharge && pad->GetAugment<AtPadArray>("Q") != nullptr)
       return chargeToHits(*pad, "Q");
+
+   // If this pad already contains reconstructed charge, then just use it as is.
+   if (fUseExistingCharge && pad->GetAugment<AtPadArray>("Qreco") != nullptr)
+      return chargeToHits(*pad, "Qreco");
 
    // If this pad already contains FFT information, then just use it as is.
    if (dynamic_cast<AtPadFFT *>(pad->GetAugment("fft")) != nullptr)
