@@ -110,11 +110,11 @@ const AtPadFFT &AtPSADeconv::GetResponseFFT(int padNum)
 const AtPadFFT &AtPSADeconv::GetResponseFilter(int padNum)
 {
    auto &pad = GetResponse(padNum);
-   auto &fft = GetResponseFFT(padNum);
    auto filter = dynamic_cast<AtPadFFT *>(pad.GetAugment("filter"));
 
    if (filter == nullptr) {
       LOG(debug) << "Adding filter to pad " << padNum;
+      auto &fft = GetResponseFFT(padNum);
       filter = dynamic_cast<AtPadFFT *>(pad.AddAugment("filter", std::make_unique<AtPadFFT>()));
       updateFilter(fft, filter);
    }
@@ -140,6 +140,9 @@ AtPad *AtPSADeconv::createResponsePad(int padNum)
    auto tbTime = fPar->GetTBTime() / 1000.;
 
    auto pad = fEventResponse.AddPad(padNum);
+   if (fResponse == nullptr && fUseExistingCharge)
+      return pad;
+
    LOG(debug) << "Filling response pad for " << padNum;
    for (int i = 0; i < 512; ++i) {
       auto time = (i + 0.5) * tbTime;

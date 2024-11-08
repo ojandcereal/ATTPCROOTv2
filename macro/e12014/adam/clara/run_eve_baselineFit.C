@@ -50,7 +50,7 @@ void run_eve_baselineFit()
    // Create viewer manager
    auto eveMan = new AtViewerManager(fMap);
 
-   auto tabMain = std::make_unique<AtTabMain>();
+   auto tabMain = std::make_unique<AtTabFission>();
 
    auto tabPad = std::make_unique<AtTabPad>(2, 2);
    tabPad->DrawRawADC(0, 0);
@@ -59,23 +59,40 @@ void run_eve_baselineFit()
    tabPad->DrawHits(1, 1);
    tabPad->DrawHits(0, 0);
 
-   eveMan->AddTab(std::move(tabMain));
-   eveMan->AddTab(std::move(tabPad));
-
-   AtRawEvent *respAvgEvent;
-   TFile *f2 = new TFile(sharedInfoDir + "respAvg.root");
-   f2->GetObject("avgResp", respAvgEvent);
-   f2->Close();
-
    // Create PSA task this is the uncorrected data
    auto psa = std::make_unique<AtPSADeconvFitBaseline>();
-   psa->SetResponse(*respAvgEvent);
-   psa->SetThreshold(15); // Threshold in charge units
-   psa->SetFilterOrder(6);
-   psa->SetCutoffFreq(75);
+   psa->SetUseCharge(true);
    AtPSAtask *psaTask = new AtPSAtask(std::move(psa));
    psaTask->SetInputBranch("AtRawEventRaw");
+   psaTask->SetOutputBranch("AtEventBaselineFit");
    eveMan->AddTask(psaTask);
+
+   auto method = std::make_unique<SampleConsensus::AtSampleConsensus>(
+      SampleConsensus::Estimators::kYRANSAC, AtPatterns::PatternType::kFission, RandomSample::SampleMethod::kY);
+   method->SetDistanceThreshold(20);
+   method->SetNumIterations(500);
+   method->SetMinHitsPattern(150);
+   method->SetChargeThreshold(10); //-1 implies no charge-weighted fitting
+   method->SetFitPattern(true);
+   auto sacTask = new AtSampleConsensusTask(std::move(method));
+   sacTask->SetPersistence(false);
+   sacTask->SetInputBranch("AtEventBaselineFit");
+   sacTask->SetOutputBranch("AtPatternEvent");
+   eveMan->AddTask(sacTask);
+
+   AtFissionTask *fissionTask = new AtFissionTask();
+   fissionTask->SetUncorrectedEventBranch("AtEventBaselineFit");
+   fissionTask->SetPatternBranch("AtPatternEvent");
+   fissionTask->SetOutBranch("AtFissionEventBaseline");
+   fissionTask->SetPersistance(false);
+   eveMan->AddTask(fissionTask);
+
+   auto &fissionBranch = tabMain->GetFissionBranch();
+   auto tabFF = std::make_unique<AtTabFF>(fissionBranch, false);
+
+   eveMan->AddTab(std::move(tabMain));
+   eveMan->AddTab(std::move(tabPad));
+   eveMan->AddTab(std::move(tabFF));
 
    eveMan->Init();
 
